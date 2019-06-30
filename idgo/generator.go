@@ -22,6 +22,8 @@ type Generator struct {
 	maxSize int
 }
 
+const bits = 64
+
 // NewGenerator is Generator constructed.
 func NewGenerator(maxSize int) (*Generator, error) {
 	if maxSize <= 0 {
@@ -30,7 +32,7 @@ func NewGenerator(maxSize int) (*Generator, error) {
 
 	return &Generator{
 		mutex:       &sync.Mutex{},
-		allocatedID: make([]uint64, maxSize/8+1),
+		allocatedID: make([]uint64, maxSize/bits+1),
 		maxSize:     maxSize,
 	}, nil
 }
@@ -74,27 +76,27 @@ func (g *Generator) Free(id int) {
 }
 
 func (g *Generator) isAllocated(id int) bool {
-	index := id / 8
+	index := id / bits
 	u64 := g.allocatedID[index]
-	shift := uint64(id % 8)
+	shift := uint64(id % bits)
 	mask := uint64(1 << shift)
 	flag := u64 & mask
 	return flag != 0
 }
 
 func (g *Generator) allocate(id int) {
-	index := id / 8
+	index := id / bits
 	u64 := g.allocatedID[index]
-	shift := uint64(id % 8)
+	shift := uint64(id % bits)
 	mask := uint64(1 << shift)
 	flag := u64 | mask
 	g.allocatedID[index] = flag
 }
 
 func (g *Generator) free(id int) {
-	index := id / 8
+	index := id / bits
 	u64 := g.allocatedID[index]
-	shift := uint64(id % 8)
+	shift := uint64(id % bits)
 	mask := uint64(1 << shift)
 	flag := u64 & ^mask
 	g.allocatedID[index] = flag
