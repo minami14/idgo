@@ -10,7 +10,7 @@ type Generator struct {
 	mutex *sync.Mutex
 
 	// allocatedID is slice to judgement if id is allocated.
-	allocatedID []uint64
+	allocatedID []byte
 
 	// nextTryID is the number to try next when allocate id.
 	nextTryID int
@@ -22,7 +22,7 @@ type Generator struct {
 	maxSize int
 }
 
-const bits = 64
+const bits = 8
 
 // NewGenerator is Generator constructed.
 func NewGenerator(maxSize int) (*Generator, error) {
@@ -32,7 +32,7 @@ func NewGenerator(maxSize int) (*Generator, error) {
 
 	return &Generator{
 		mutex:       &sync.Mutex{},
-		allocatedID: make([]uint64, maxSize/bits+1),
+		allocatedID: make([]byte, maxSize/bits+1),
 		maxSize:     maxSize,
 	}, nil
 }
@@ -77,27 +77,27 @@ func (g *Generator) Free(id int) {
 
 func (g *Generator) isAllocated(id int) bool {
 	index := id / bits
-	u64 := g.allocatedID[index]
-	shift := uint64(id % bits)
-	mask := uint64(1 << shift)
-	flag := u64 & mask
+	b := g.allocatedID[index]
+	shift := byte(id % bits)
+	mask := byte(1 << shift)
+	flag := b & mask
 	return flag != 0
 }
 
 func (g *Generator) allocate(id int) {
 	index := id / bits
-	u64 := g.allocatedID[index]
-	shift := uint64(id % bits)
-	mask := uint64(1 << shift)
-	flag := u64 | mask
+	b := g.allocatedID[index]
+	shift := byte(id % bits)
+	mask := byte(1 << shift)
+	flag := b | mask
 	g.allocatedID[index] = flag
 }
 
 func (g *Generator) free(id int) {
 	index := id / bits
-	u64 := g.allocatedID[index]
-	shift := uint64(id % bits)
-	mask := uint64(1 << shift)
-	flag := u64 & ^mask
+	b := g.allocatedID[index]
+	shift := byte(id % bits)
+	mask := byte(1 << shift)
+	flag := b & ^mask
 	g.allocatedID[index] = flag
 }
