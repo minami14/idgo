@@ -67,6 +67,9 @@ func (g *Generator) Generate() (int, error) {
 
 // Free a used id
 func (g *Generator) Free(id int) {
+	if id > g.maxSize {
+		return
+	}
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
 	if g.isAllocated(id) {
