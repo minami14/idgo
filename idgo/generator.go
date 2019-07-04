@@ -65,7 +65,7 @@ func (g *Generator) Generate() (int, error) {
 	}
 }
 
-// Free a used id
+// Free a allocated id
 func (g *Generator) Free(id int) {
 	if id > g.maxSize {
 		return
@@ -76,6 +76,15 @@ func (g *Generator) Free(id int) {
 		g.free(id)
 		g.allocatedIDCount--
 	}
+}
+
+// FreeAll free all allocated id
+func (g *Generator) FreeAll() {
+	g.mutex.Lock()
+	defer g.mutex.Unlock()
+	g.allocatedID = make([]byte, g.maxSize)
+	g.nextTryID = 0
+	g.allocatedIDCount = 0
 }
 
 func (g *Generator) isAllocated(id int) bool {
