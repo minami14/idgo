@@ -56,7 +56,6 @@ func (g *Generator) Generate() (int, error) {
 			id := g.nextTryID
 			g.allocate(id)
 			g.nextTryID++
-			g.allocatedIDCount++
 			return id, nil
 		}
 
@@ -65,16 +64,34 @@ func (g *Generator) Generate() (int, error) {
 	}
 }
 
+// Allocate a specified id
+func (g *Generator) Allocate(id int) error {
+	if id > g.maxSize {
+		return errors.New("id exceeds the maximum value")
+	}
+
+	g.mutex.Lock()
+	defer g.mutex.Unlock()
+
+	if g.isAllocated(id) {
+		return errors.New("id is already allocated")
+	}
+
+	g.allocate(id)
+	return nil
+}
+
 // Free a allocated id
 func (g *Generator) Free(id int) {
 	if id > g.maxSize {
 		return
 	}
+
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
+
 	if g.isAllocated(id) {
 		g.free(id)
-		g.allocatedIDCount--
 	}
 }
 
@@ -85,6 +102,18 @@ func (g *Generator) FreeAll() {
 	g.allocatedID = make([]byte, g.maxSize)
 	g.nextTryID = 0
 	g.allocatedIDCount = 0
+}
+
+// IsAllocated check if specified id is allocated
+func (g *Generator) IsAllocated(id int) bool {
+	if id > g.maxSize {
+		return false
+	}
+
+	g.mutex.Lock()
+	defer g.mutex.Unlock()
+
+	return g.isAllocated(id)
 }
 
 func (g *Generator) isAllocated(id int) bool {
@@ -103,6 +132,7 @@ func (g *Generator) allocate(id int) {
 	mask := byte(1 << shift)
 	flag := b | mask
 	g.allocatedID[index] = flag
+	g.allocatedIDCount++
 }
 
 func (g *Generator) free(id int) {
@@ -112,4 +142,5 @@ func (g *Generator) free(id int) {
 	mask := byte(1 << shift)
 	flag := b & ^mask
 	g.allocatedID[index] = flag
+	g.allocatedIDCount--
 }
