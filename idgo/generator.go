@@ -116,6 +116,13 @@ func (g *Generator) IsAllocated(id int) bool {
 	return g.isAllocated(id)
 }
 
+// GetAllocatedIDCount is getter for allocatedIDCount
+func (g *Generator) GetAllocatedIDCount() int {
+	g.mutex.Lock()
+	defer g.mutex.Unlock()
+	return g.allocatedIDCount
+}
+
 func (g *Generator) isAllocated(id int) bool {
 	index := id / bits
 	b := g.allocatedID[index]
