@@ -7,7 +7,7 @@ import (
 )
 
 func TestGenerateID(t *testing.T) {
-	gen, err := NewGenerator(math.MaxInt16)
+	gen, err := NewIDGenerator(math.MaxInt16)
 	if err != nil {
 		t.Error(err)
 	}
