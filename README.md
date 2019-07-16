@@ -1,2 +1,2 @@
 # idgo
-id generator
+idgo is fast id generator
