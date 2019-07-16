@@ -14,11 +14,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	logger := log.New(os.Stdout, "", log.LstdFlags)
-	s, err := idgo.NewServer(math.MaxInt16, tcpAddr, logger)
+
+	s, err := idgo.NewServer(math.MaxInt16, tcpAddr)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	s.SetLogger(log.New(os.Stdout, "", log.LstdFlags))
+
 	if err := s.Run(); err != nil {
 		log.Fatal(err)
 	}

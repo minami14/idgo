@@ -17,11 +17,13 @@ func RunServer(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	logger := log.New(os.Stdout, "", log.LstdFlags)
-	s, err := NewServer(math.MaxInt16, tcpAddr, logger)
+
+	s, err := NewServer(math.MaxInt16, tcpAddr)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	s.SetLogger(log.New(os.Stdout, "", log.LstdFlags))
 
 	go func() {
 		if err := s.Run(); err != nil {

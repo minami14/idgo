@@ -25,7 +25,7 @@ const (
 )
 
 // NewServer is IDGenerateServer constructed.
-func NewServer(maxSize int, tcpAddr *net.TCPAddr, logger *log.Logger) (*IDGenerateServer, error) {
+func NewServer(maxSize int, tcpAddr *net.TCPAddr) (*IDGenerateServer, error) {
 	gen, err := NewIDGenerator(maxSize)
 	if err != nil {
 		return nil, err
@@ -34,9 +34,14 @@ func NewServer(maxSize int, tcpAddr *net.TCPAddr, logger *log.Logger) (*IDGenera
 		generator: gen,
 		addr:      tcpAddr,
 		mutex:     &sync.Mutex{},
-		logger:    logger,
+		logger:    &log.Logger{},
 		status:    stop,
 	}, nil
+}
+
+// SetLogger is setter for logger
+func (s *IDGenerateServer) SetLogger(logger *log.Logger) {
+	s.logger = logger
 }
 
 // Run server
@@ -96,6 +101,8 @@ const (
 	freeAll
 	isAllocated
 	allocatedIDCount
+	ping
+	pong
 	disconnect
 )
 
@@ -133,6 +140,10 @@ func (s *IDGenerateServer) serve(conn *net.TCPConn) error {
 			}
 		case allocatedIDCount:
 			if err := s.getAllocatedIDCount(conn); err != nil {
+				return err
+			}
+		case ping:
+			if err := s.pong(conn); err != nil {
 				return err
 			}
 		case disconnect:
@@ -214,5 +225,13 @@ func (s *IDGenerateServer) getAllocatedIDCount(conn *net.TCPConn) error {
 	if _, err := conn.Write(buf); err != nil {
 		return err
 	}
+	return nil
+}
+
+func (s *IDGenerateServer) pong(conn *net.TCPConn) error {
+	if _, err := conn.Write([]byte{pong}); err != nil {
+		return err
+	}
+
 	return nil
 }
