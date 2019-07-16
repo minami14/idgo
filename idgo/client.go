@@ -9,6 +9,7 @@ import (
 
 type IDGenerateClient struct {
 	mutex *sync.Mutex
+	addr  *net.TCPAddr
 	conn  *net.TCPConn
 }
 
@@ -23,11 +24,45 @@ func NewClient() *IDGenerateClient {
 func (c *IDGenerateClient) Connect(addr *net.TCPAddr) error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
+	c.addr = addr
 	conn, err := net.DialTCP("tcp", nil, addr)
 	if err != nil {
 		return err
 	}
 	c.conn = conn
+	return nil
+}
+
+// Reconnect connects to the server if a connection to the server is not alive
+func (c *IDGenerateClient) Reconnect() error {
+	if c.Ping() == nil {
+		return nil
+	}
+
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	return c.reconnect()
+}
+
+// Ping verifies a connection to the server is still alive
+func (c *IDGenerateClient) Ping() error {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	if _, err := c.conn.Write([]byte{ping}); err != nil {
+		return err
+	}
+
+	buf := make([]byte, 1)
+	if _, err := c.conn.Read(buf); err != nil {
+		return err
+	}
+
+	if buf[0] != pong {
+		return errors.New("failed to receive pong message")
+	}
+
 	return nil
 }
 
@@ -150,4 +185,14 @@ func (c *IDGenerateClient) Close() error {
 	buf := []byte{disconnect}
 	_, err := c.conn.Write(buf)
 	return err
+}
+
+func (c *IDGenerateClient) reconnect() error {
+	conn, err := net.DialTCP("tcp", nil, c.addr)
+	if err != nil {
+		return err
+	}
+
+	c.conn = conn
+	return nil
 }
