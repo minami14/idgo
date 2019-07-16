@@ -8,7 +8,7 @@ import (
 	"sync"
 )
 
-// IDGenerateServer generate id when requested by client
+// IDGenerateServer generate id when requested by client.
 type IDGenerateServer struct {
 	generator *IDGenerator
 	addr      *net.TCPAddr
@@ -39,12 +39,12 @@ func NewServer(maxSize int, tcpAddr *net.TCPAddr) (*IDGenerateServer, error) {
 	}, nil
 }
 
-// SetLogger is setter for logger
+// SetLogger is setter for logger.
 func (s *IDGenerateServer) SetLogger(logger *log.Logger) {
 	s.logger = logger
 }
 
-// Run server
+// Run server.
 func (s *IDGenerateServer) Run() error {
 	s.mutex.Lock()
 	if s.status == run {
@@ -63,7 +63,7 @@ func (s *IDGenerateServer) Run() error {
 	return nil
 }
 
-// Pause server while maintaining allocated id
+// Pause server while maintaining allocated id.
 func (s *IDGenerateServer) Pause() error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -74,7 +74,7 @@ func (s *IDGenerateServer) Pause() error {
 	return nil
 }
 
-// Stop server and free all allocated id
+// Stop server and free all allocated id.
 func (s *IDGenerateServer) Stop() error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()

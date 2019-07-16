@@ -37,7 +37,7 @@ func NewIDGenerator(maxSize int) (*IDGenerator, error) {
 	}, nil
 }
 
-// Generate a new id
+// Generate a new id.
 func (g *IDGenerator) Generate() (int, error) {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
@@ -46,12 +46,12 @@ func (g *IDGenerator) Generate() (int, error) {
 			return 0, errors.New("id is exhausted")
 		}
 
-		// Set nextTryID to 0 when nextTryID is greater than maxSize
+		// Set nextTryID to 0 when nextTryID is greater than maxSize.
 		if g.nextTryID >= g.maxSize {
 			g.nextTryID = 0
 		}
 
-		// Allocate and return nextTryID when nextTryID is not yet allocated
+		// Allocate and return nextTryID when nextTryID is not yet allocated.
 		if !g.isAllocated(g.nextTryID) {
 			id := g.nextTryID
 			g.allocate(id)
@@ -64,7 +64,7 @@ func (g *IDGenerator) Generate() (int, error) {
 	}
 }
 
-// Allocate a specified id
+// Allocate a specified id.
 func (g *IDGenerator) Allocate(id int) error {
 	if id > g.maxSize {
 		return errors.New("id exceeds the maximum value")
@@ -81,7 +81,7 @@ func (g *IDGenerator) Allocate(id int) error {
 	return nil
 }
 
-// Free a allocated id
+// Free a allocated id.
 func (g *IDGenerator) Free(id int) {
 	if id > g.maxSize {
 		return
@@ -95,7 +95,7 @@ func (g *IDGenerator) Free(id int) {
 	}
 }
 
-// FreeAll free all allocated id
+// FreeAll free all allocated id.
 func (g *IDGenerator) FreeAll() {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
@@ -104,7 +104,7 @@ func (g *IDGenerator) FreeAll() {
 	g.allocatedIDCount = 0
 }
 
-// IsAllocated check if specified id is allocated
+// IsAllocated check if specified id is allocated.
 func (g *IDGenerator) IsAllocated(id int) bool {
 	if id > g.maxSize {
 		return false
@@ -116,7 +116,7 @@ func (g *IDGenerator) IsAllocated(id int) bool {
 	return g.isAllocated(id)
 }
 
-// GetAllocatedIDCount is getter for allocatedIDCount
+// GetAllocatedIDCount is getter for allocatedIDCount.
 func (g *IDGenerator) GetAllocatedIDCount() int {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()

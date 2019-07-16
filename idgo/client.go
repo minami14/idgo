@@ -20,7 +20,7 @@ func NewClient() *IDGenerateClient {
 	}
 }
 
-// Connect to server
+// Connect to server.
 func (c *IDGenerateClient) Connect(addr *net.TCPAddr) error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
@@ -33,7 +33,7 @@ func (c *IDGenerateClient) Connect(addr *net.TCPAddr) error {
 	return nil
 }
 
-// Reconnect connects to the server if a connection to the server is not alive
+// Reconnect connects to the server if a connection to the server is not alive.
 func (c *IDGenerateClient) Reconnect() error {
 	if c.Ping() == nil {
 		return nil
@@ -45,7 +45,7 @@ func (c *IDGenerateClient) Reconnect() error {
 	return c.reconnect()
 }
 
-// Ping verifies a connection to the server is still alive
+// Ping verifies a connection to the server is still alive.
 func (c *IDGenerateClient) Ping() error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
@@ -66,7 +66,7 @@ func (c *IDGenerateClient) Ping() error {
 	return nil
 }
 
-// Generate a new id
+// Generate a new id.
 func (c *IDGenerateClient) Generate() (int, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
@@ -96,7 +96,7 @@ func (c *IDGenerateClient) Generate() (int, error) {
 	return id, nil
 }
 
-// Allocate a specified id
+// Allocate a specified id.
 func (c *IDGenerateClient) Allocate(id int) error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
@@ -111,7 +111,7 @@ func (c *IDGenerateClient) Allocate(id int) error {
 	return nil
 }
 
-// Free a allocated id
+// Free a allocated id.
 func (c *IDGenerateClient) Free(id int) error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
@@ -126,7 +126,7 @@ func (c *IDGenerateClient) Free(id int) error {
 	return nil
 }
 
-// FreeAll free all allocated id
+// FreeAll free all allocated id.
 func (c *IDGenerateClient) FreeAll() error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
@@ -140,7 +140,7 @@ func (c *IDGenerateClient) FreeAll() error {
 	return nil
 }
 
-// IsAllocated check if specified id is allocated
+// IsAllocated check if specified id is allocated.
 func (c *IDGenerateClient) IsAllocated(id int) (bool, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
@@ -159,7 +159,7 @@ func (c *IDGenerateClient) IsAllocated(id int) (bool, error) {
 	return buf[0] == 1, nil
 }
 
-// GetAllocatedIDCount is getter for allocatedIDCount
+// GetAllocatedIDCount is getter for allocatedIDCount.
 func (c *IDGenerateClient) GetAllocatedIDCount(id int) (int, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
@@ -177,7 +177,7 @@ func (c *IDGenerateClient) GetAllocatedIDCount(id int) (int, error) {
 	return count, nil
 }
 
-// Close connection
+// Close connection.
 func (c *IDGenerateClient) Close() error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
