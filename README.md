@@ -104,3 +104,10 @@ func main() {
 	}
 }
 ```
+
+# License
+MIT License
+
+idgo uses the following libraries
+
+[go-flags](https://github.com/jessevdk/go-flags/blob/master/LICENSE) Copyright (c) 2012 Jesse van den Kieboom
