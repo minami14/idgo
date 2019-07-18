@@ -107,14 +107,14 @@ const (
 )
 
 func (s *IDGenerateServer) serve(conn *net.TCPConn) error {
-	buf := make([]byte, 8)
+	buf := make([]byte, 1)
 	defer func() {
 		if err := conn.Close(); err != nil {
 			s.logger.Println(err)
 		}
 	}()
 	for {
-		if _, err := conn.Read(buf[:1]); err != nil {
+		if _, err := conn.Read(buf); err != nil {
 			return err
 		}
 		switch buf[0] {
