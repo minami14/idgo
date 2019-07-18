@@ -1,5 +1,5 @@
 # idgo
-idgo is fast generator
+idgo is fast id generator
 
 # Install
 ```bash
