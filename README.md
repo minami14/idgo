@@ -27,7 +27,7 @@ func main() {
 	// Generate a id.
 	id, err := gen.Generate()
 	if err != nil {
-		log.Println(id)
+		log.Println(err)
 	}
 
 	// Generated id.
