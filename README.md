@@ -19,7 +19,7 @@ import (
 )
 
 func main() {
-	gen, err := idgo.NewIDGenerator(math.MaxInt16)
+	gen, err := idgo.NewIDGenerator(0, math.MaxInt16)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -68,7 +68,7 @@ chmod +x idgo-server
 
 ### Run server
 ```bash
-./idgo-server -m [maximum value of id] -p [port number]
+./idgo-server -min [minimum value of id] -max [maximum value of id] -p [port number]
 ```
 
 ## Client
