@@ -11,7 +11,8 @@ import (
 )
 
 type Options struct {
-	MaxSize int    `short:"m" long:"max" description:"Maximum value of ID to be generated" default:"2147483647"`
+	MinSize int    `short:"min" long:"minimum" description:"Minimum value of ID to be generated" default:"1"`
+	MaxSize int    `short:"max" long:"maximum" description:"Maximum value of ID to be generated" default:"2147483647"`
 	Port    uint16 `short:"p" long:"port" description:"Port number" default:"49152"`
 }
 
@@ -27,7 +28,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	s, err := idgo.NewServer(options.MaxSize, tcpAddr)
+	s, err := idgo.NewServer(options.MinSize, options.MaxSize, tcpAddr)
 	if err != nil {
 		log.Fatal(err)
 	}

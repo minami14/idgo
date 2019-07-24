@@ -12,13 +12,13 @@ import (
 
 const address = ":4000"
 
-func RunServer(t *testing.T) {
+func RunServer() {
 	tcpAddr, err := net.ResolveTCPAddr("tcp", address)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	s, err := NewServer(math.MaxInt16, tcpAddr)
+	s, err := NewServer(0, math.MaxInt16, tcpAddr)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -34,7 +34,7 @@ func RunServer(t *testing.T) {
 }
 
 func TestGenerateIDByServer(t *testing.T) {
-	RunServer(t)
+	RunServer()
 
 	tcpAddr, err := net.ResolveTCPAddr("tcp", address)
 	if err != nil {
