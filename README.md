@@ -1,5 +1,5 @@
 # idgo
-idgo is fast id generator
+idgo is a very fast id generator that generates an int id that can specify the maximum value
 
 # Install
 ```bash
