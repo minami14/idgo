@@ -2,7 +2,6 @@ package idgo
 
 // AllocatedIDStore stores allocated id.
 type AllocatedIDStore interface {
-	initialize() error
 	isAllocated(int) (bool, error)
 	allocate(int) error
 	free(int) error
@@ -23,10 +22,6 @@ func NewLocalStore(maxSize int) *LocalStore {
 	return &LocalStore{
 		maxSize:     maxSize,
 		allocatedID: make([]byte, maxSize/bits+1)}
-}
-
-func (l *LocalStore) initialize() error {
-	return nil
 }
 
 func (l *LocalStore) isAllocated(id int) (bool, error) {
