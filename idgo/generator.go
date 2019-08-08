@@ -49,9 +49,16 @@ func (g *IDGenerator) Generate() (int, error) {
 		}
 
 		// Allocate and return nextTryID when nextTryID is not yet allocated.
-		if !g.allocatedIDStore.isAllocated(g.nextTryID) {
+		isAlloc, err := g.allocatedIDStore.isAllocated(g.nextTryID)
+		if err != nil {
+			return 0, err
+		}
+
+		if !isAlloc {
 			id := g.nextTryID
-			g.allocatedIDStore.allocate(id)
+			if err := g.allocatedIDStore.allocate(id); err != nil {
+				return 0, err
+			}
 			g.allocatedIDCount++
 			g.nextTryID++
 			return id, nil
@@ -71,43 +78,59 @@ func (g *IDGenerator) Allocate(id int) error {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
 
-	if g.allocatedIDStore.isAllocated(id) {
+	isAlloc, err := g.allocatedIDStore.isAllocated(id)
+	if err != nil {
+		return err
+	}
+
+	if isAlloc {
 		return errors.New("id is already allocated")
 	}
 
-	g.allocatedIDStore.allocate(id)
+	if err := g.allocatedIDStore.allocate(id); err != nil {
+		return err
+	}
 	g.allocatedIDCount++
 	return nil
 }
 
 // Free a allocated id.
-func (g *IDGenerator) Free(id int) {
+func (g *IDGenerator) Free(id int) error {
 	if id > g.maxSize {
-		return
+		return errors.New("greater than max size")
 	}
 
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
 
-	if g.allocatedIDStore.isAllocated(id) {
-		g.allocatedIDStore.free(id)
+	isAlloc, err := g.allocatedIDStore.isAllocated(id)
+	if err != nil {
+		return err
+	}
+
+	if isAlloc {
+		if err := g.allocatedIDStore.free(id); err != nil {
+			return err
+		}
 		g.allocatedIDCount--
 	}
 }
 
 // FreeAll free all allocated id.
-func (g *IDGenerator) FreeAll() {
+func (g *IDGenerator) FreeAll() error {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
-	g.allocatedIDStore.freeAll()
+	if err := g.allocatedIDStore.freeAll(); err != nil {
+		return err
+	}
 	g.nextTryID = 0
 	g.allocatedIDCount = 0
 }
 
 // IsAllocated check if specified id is allocated.
-func (g *IDGenerator) IsAllocated(id int) bool {
+func (g *IDGenerator) IsAllocated(id int) (bool, error) {
 	if id > g.maxSize {
-		return false
+		return false, errors.New("greater than max size")
 	}
 
 	g.mutex.Lock()

@@ -78,8 +78,7 @@ func (s *IDGenerateServer) Pause() error {
 func (s *IDGenerateServer) Stop() error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
-	s.generator.FreeAll()
-	return nil
+	return s.generator.FreeAll()
 }
 
 func (s *IDGenerateServer) run() {
@@ -192,13 +191,11 @@ func (s *IDGenerateServer) free(conn *net.TCPConn) error {
 		return err
 	}
 	id := int(binary.LittleEndian.Uint64(buf))
-	s.generator.Free(id)
-	return nil
+	return s.generator.Free(id)
 }
 
 func (s *IDGenerateServer) freeAll(conn *net.TCPConn) error {
-	s.generator.FreeAll()
-	return nil
+	return s.generator.FreeAll()
 }
 
 func (s *IDGenerateServer) isAllocated(conn *net.TCPConn) error {
@@ -206,12 +203,18 @@ func (s *IDGenerateServer) isAllocated(conn *net.TCPConn) error {
 	if _, err := conn.Read(buf); err != nil {
 		return err
 	}
+
 	id := int(binary.LittleEndian.Uint64(buf))
 	buf = []byte{0}
-	isAlloc := s.generator.IsAllocated(id)
+	isAlloc, err := s.generator.IsAllocated(id)
+	if err != nil {
+		return err
+	}
+
 	if isAlloc {
 		buf[0] = 1
 	}
+
 	if _, err := conn.Write(buf); err != nil {
 		return err
 	}
