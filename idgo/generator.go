@@ -9,8 +9,7 @@ import (
 type IDGenerator struct {
 	mutex *sync.Mutex
 
-	// allocatedID is slice to judgement if id is allocated.
-	allocatedID []byte
+	allocatedIDStore AllocatedIDStore
 
 	// nextTryID is the number to try next when allocate id.
 	nextTryID int
@@ -22,18 +21,16 @@ type IDGenerator struct {
 	maxSize int
 }
 
-const bits = 8
-
 // NewIDGenerator is IDGenerator constructed.
-func NewIDGenerator(maxSize int) (*IDGenerator, error) {
-	if maxSize <= 0 {
+func NewIDGenerator(store AllocatedIDStore) (*IDGenerator, error) {
+	if store.getMaxSize() <= 0 {
 		return nil, errors.New("argument is negative number")
 	}
 
 	return &IDGenerator{
-		mutex:       &sync.Mutex{},
-		allocatedID: make([]byte, maxSize/bits+1),
-		maxSize:     maxSize,
+		mutex:            &sync.Mutex{},
+		allocatedIDStore: store,
+		maxSize:          store.getMaxSize(),
 	}, nil
 }
 
@@ -52,9 +49,10 @@ func (g *IDGenerator) Generate() (int, error) {
 		}
 
 		// Allocate and return nextTryID when nextTryID is not yet allocated.
-		if !g.isAllocated(g.nextTryID) {
+		if !g.allocatedIDStore.isAllocated(g.nextTryID) {
 			id := g.nextTryID
-			g.allocate(id)
+			g.allocatedIDStore.allocate(id)
+			g.allocatedIDCount++
 			g.nextTryID++
 			return id, nil
 		}
@@ -73,11 +71,12 @@ func (g *IDGenerator) Allocate(id int) error {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
 
-	if g.isAllocated(id) {
+	if g.allocatedIDStore.isAllocated(id) {
 		return errors.New("id is already allocated")
 	}
 
-	g.allocate(id)
+	g.allocatedIDStore.allocate(id)
+	g.allocatedIDCount++
 	return nil
 }
 
@@ -90,8 +89,9 @@ func (g *IDGenerator) Free(id int) {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
 
-	if g.isAllocated(id) {
-		g.free(id)
+	if g.allocatedIDStore.isAllocated(id) {
+		g.allocatedIDStore.free(id)
+		g.allocatedIDCount--
 	}
 }
 
@@ -99,7 +99,7 @@ func (g *IDGenerator) Free(id int) {
 func (g *IDGenerator) FreeAll() {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
-	g.allocatedID = make([]byte, g.maxSize)
+	g.allocatedIDStore.freeAll()
 	g.nextTryID = 0
 	g.allocatedIDCount = 0
 }
@@ -113,7 +113,7 @@ func (g *IDGenerator) IsAllocated(id int) bool {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
 
-	return g.isAllocated(id)
+	return g.allocatedIDStore.isAllocated(id)
 }
 
 // GetAllocatedIDCount is getter for allocatedIDCount.
@@ -121,33 +121,4 @@ func (g *IDGenerator) GetAllocatedIDCount() int {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
 	return g.allocatedIDCount
-}
-
-func (g *IDGenerator) isAllocated(id int) bool {
-	index := id / bits
-	b := g.allocatedID[index]
-	shift := byte(id % bits)
-	mask := byte(1 << shift)
-	flag := b & mask
-	return flag != 0
-}
-
-func (g *IDGenerator) allocate(id int) {
-	index := id / bits
-	b := g.allocatedID[index]
-	shift := byte(id % bits)
-	mask := byte(1 << shift)
-	flag := b | mask
-	g.allocatedID[index] = flag
-	g.allocatedIDCount++
-}
-
-func (g *IDGenerator) free(id int) {
-	index := id / bits
-	b := g.allocatedID[index]
-	shift := byte(id % bits)
-	mask := byte(1 << shift)
-	flag := b & ^mask
-	g.allocatedID[index] = flag
-	g.allocatedIDCount--
 }
