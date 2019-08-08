@@ -25,8 +25,8 @@ const (
 )
 
 // NewServer is IDGenerateServer constructed.
-func NewServer(maxSize int, tcpAddr *net.TCPAddr) (*IDGenerateServer, error) {
-	gen, err := NewIDGenerator(maxSize)
+func NewServer(store AllocatedIDStore, tcpAddr *net.TCPAddr) (*IDGenerateServer, error) {
+	gen, err := NewIDGenerator(store)
 	if err != nil {
 		return nil, err
 	}
