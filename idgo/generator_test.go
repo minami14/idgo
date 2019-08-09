@@ -15,19 +15,20 @@ const address = ":4000"
 func RunServer(t *testing.T) {
 	tcpAddr, err := net.ResolveTCPAddr("tcp", address)
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 
-	s, err := NewServer(math.MaxInt16, tcpAddr)
+	store := NewLocalStore(math.MaxInt16)
+	s, err := NewServer(store, tcpAddr)
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 
 	s.SetLogger(log.New(os.Stdout, "", log.LstdFlags))
 
 	go func() {
 		if err := s.Run(); err != nil {
-			log.Fatal(err)
+			t.Fatal(err)
 		}
 	}()
 	time.Sleep(1 * time.Second)
@@ -38,11 +39,11 @@ func TestGenerateIDByServer(t *testing.T) {
 
 	tcpAddr, err := net.ResolveTCPAddr("tcp", address)
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 	client := NewClient()
 	if err := client.Connect(tcpAddr); err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 
 	used := make([]bool, math.MaxInt16)
