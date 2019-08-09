@@ -80,3 +80,58 @@ func TestGenerateIDByServer(t *testing.T) {
 
 	}
 }
+
+func BenchmarkLocalStore(b *testing.B) {
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	store := NewLocalStore(math.MaxInt16)
+	gen, err := NewIDGenerator(store)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	for i := 0; i < b.N; i++ {
+		for j := 0; j < math.MaxInt16; j++ {
+			id, err := gen.Generate()
+			if err != nil {
+				b.Error(err)
+			}
+			if err := gen.Free(id); err != nil {
+				b.Error(err)
+			}
+		}
+		if err := gen.FreeAll(); err != nil {
+			b.Error()
+		}
+	}
+}
+
+func BenchmarkRedisStore(b *testing.B) {
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	store, err := NewRedisStore("127.0.0.1:6379", "idgo", math.MaxInt16)
+	if err != nil {
+		b.Fatal(err)
+	}
+	gen, err := NewIDGenerator(store)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	for i := 0; i < b.N; i++ {
+		for j := 0; j < math.MaxInt16; j++ {
+			id, err := gen.Generate()
+			if err != nil {
+				b.Error(err)
+			}
+			if err := gen.Free(id); err != nil {
+				b.Error(err)
+			}
+		}
+		if err := gen.FreeAll(); err != nil {
+			b.Error()
+		}
+	}
+}
