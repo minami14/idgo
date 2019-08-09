@@ -24,7 +24,7 @@ type IDGenerator struct {
 // NewIDGenerator is IDGenerator constructed.
 func NewIDGenerator(store AllocatedIDStore) (*IDGenerator, error) {
 	if store.getMaxSize() <= 0 {
-		return nil, errors.New("argument is negative number")
+		return nil, errors.New("maxsize is 0 or less")
 	}
 
 	return &IDGenerator{
@@ -114,6 +114,8 @@ func (g *IDGenerator) Free(id int) error {
 		}
 		g.allocatedIDCount--
 	}
+
+	return nil
 }
 
 // FreeAll free all allocated id.
@@ -125,6 +127,8 @@ func (g *IDGenerator) FreeAll() error {
 	}
 	g.nextTryID = 0
 	g.allocatedIDCount = 0
+
+	return nil
 }
 
 // IsAllocated check if specified id is allocated.
