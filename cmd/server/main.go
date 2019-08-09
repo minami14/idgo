@@ -14,12 +14,13 @@ type Options struct {
 	MaxSize int    `short:"m" long:"max" description:"Maximum value of ID to be generated" default:"2147483647"`
 	Port    uint16 `short:"p" long:"port" description:"Port number" default:"49152"`
 	Redis   string `short:"r" long:"redis" description:"Redis server hostname" default:""`
+	Key     string `short:"k" long:"key" description:"Redis key" default:"idgo"`
 }
 
 func main() {
 	var options Options
 	if _, err := flags.Parse(&options); err != nil {
-		log.Fatal(1)
+		os.Exit(1)
 	}
 
 	addr := fmt.Sprintf(":%d", options.Port)
@@ -32,7 +33,7 @@ func main() {
 	if options.Redis == "" {
 		store = idgo.NewLocalStore(options.MaxSize)
 	} else {
-		store, err = idgo.NewRedisStore(options.Redis, options.MaxSize)
+		store, err = idgo.NewRedisStore(options.Redis, options.Key, options.MaxSize)
 		if err != nil {
 			log.Fatal(err)
 		}
