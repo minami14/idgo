@@ -19,7 +19,7 @@ func NewRedisStore(host, key string, maxSize int) (*RedisStore, error) {
 	return &RedisStore{
 		maxSize: maxSize,
 		conn:    conn,
-		key:     key
+		key:     key,
 	}, nil
 }
 
