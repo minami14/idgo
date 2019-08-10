@@ -13,6 +13,8 @@ import (
 type Options struct {
 	MaxSize int    `short:"m" long:"max" description:"Maximum value of ID to be generated" default:"2147483647"`
 	Port    uint16 `short:"p" long:"port" description:"Port number" default:"49152"`
+	Redis   string `short:"r" long:"redis" description:"Redis server hostname" default:""`
+	Key     string `short:"k" long:"key" description:"Redis key" default:"idgo"`
 }
 
 func main() {
@@ -27,7 +29,17 @@ func main() {
 		log.Fatal(err)
 	}
 
-	s, err := idgo.NewServer(options.MaxSize, tcpAddr)
+	var store idgo.AllocatedIDStore
+	if options.Redis == "" {
+		store = idgo.NewLocalStore(options.MaxSize)
+	} else {
+		store, err = idgo.NewRedisStore(options.Redis, options.Key, options.MaxSize)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	s, err := idgo.NewServer(store, tcpAddr)
 	if err != nil {
 		log.Fatal(err)
 	}

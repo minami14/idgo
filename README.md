@@ -19,7 +19,8 @@ import (
 )
 
 func main() {
-	gen, err := idgo.NewIDGenerator(math.MaxInt16)
+	store := idgo.NewLocalStore(math.MaxInt16)
+	gen, err := idgo.NewIDGenerator(store)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -32,23 +33,32 @@ func main() {
 
 	// Generated id.
 	fmt.Println(id)
-	
+
 	// Allocated id count.
 	fmt.Println(gen.GetAllocatedIDCount())
-	
+
 	// id is allocated.
 	fmt.Println(gen.IsAllocated(id))
-	
+	isAllocated, err := gen.IsAllocated(id)
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Println(isAllocated)
+
 	// Free the id.
-	gen.Free(id)
-	
+	if err := gen.Free(id); err != nil {
+		log.Println(err)
+	}
+
 	// Allocate the id.
 	if err := gen.Allocate(id); err != nil {
 		log.Println(err)
 	}
-	
+
 	// Free all id.
-	gen.FreeAll()
+	if err := gen.FreeAll(); err != nil {
+		log.Println(err)
+	}
 }
 
 ```
@@ -110,4 +120,5 @@ MIT License
 
 idgo uses the following libraries
 
-[go-flags](https://github.com/jessevdk/go-flags/blob/master/LICENSE) Copyright (c) 2012 Jesse van den Kieboom
+* [go-flags](https://github.com/jessevdk/go-flags/blob/master/LICENSE) Copyright (c) 2012 Jesse van den Kieboom
+* [redigo](https://github.com/gomodule/redigo/blob/master/LICENSE)
