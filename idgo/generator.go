@@ -36,7 +36,12 @@ func (g *IDGenerator) Generate() (int, error) {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
 	for {
-		if g.allocatedIDStore.getAllocatedIDCount() >= g.maxSize {
+		count, err := g.allocatedIDStore.getAllocatedIDCount()
+		if err != nil {
+			return 0, err
+		}
+
+		if count >= g.maxSize {
 			return 0, errors.New("id is exhausted")
 		}
 
@@ -137,7 +142,7 @@ func (g *IDGenerator) IsAllocated(id int) (bool, error) {
 }
 
 // GetAllocatedIDCount is getter for allocatedIDCount.
-func (g *IDGenerator) GetAllocatedIDCount() int {
+func (g *IDGenerator) GetAllocatedIDCount() (int, error) {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
 	return g.allocatedIDStore.getAllocatedIDCount()

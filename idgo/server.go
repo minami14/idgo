@@ -222,9 +222,13 @@ func (s *IDGenerateServer) isAllocated(conn *net.TCPConn) error {
 }
 
 func (s *IDGenerateServer) getAllocatedIDCount(conn *net.TCPConn) error {
-	count := uint64(s.generator.GetAllocatedIDCount())
+	count, err := s.generator.GetAllocatedIDCount()
+	if err != nil {
+		return err
+	}
+
 	buf := make([]byte, 8)
-	binary.LittleEndian.PutUint64(buf, count)
+	binary.LittleEndian.PutUint64(buf, uint64(count))
 	if _, err := conn.Write(buf); err != nil {
 		return err
 	}

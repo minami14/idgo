@@ -11,7 +11,7 @@ type AllocatedIDStore interface {
 	free(int) error
 	freeAll() error
 	getMaxSize() int
-	getAllocatedIDCount() int
+	getAllocatedIDCount() (int, error)
 }
 
 // LocalStore stores allocated id to byte slice.
@@ -68,6 +68,6 @@ func (l *LocalStore) getMaxSize() int {
 	return l.maxSize
 }
 
-func (l *LocalStore) getAllocatedIDCount() int {
-	return l.allocatedIDCount
+func (l *LocalStore) getAllocatedIDCount() (int, error) {
+	return l.allocatedIDCount, nil
 }
