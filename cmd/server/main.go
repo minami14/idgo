@@ -10,7 +10,7 @@ import (
 	"github.com/minami14/idgo/idgo"
 )
 
-type Options struct {
+type options struct {
 	MaxSize int    `short:"m" long:"max" description:"Maximum value of ID to be generated" default:"2147483647"`
 	Port    uint16 `short:"p" long:"port" description:"Port number" default:"49152"`
 	Redis   string `short:"r" long:"redis" description:"Redis server hostname" default:""`
@@ -18,25 +18,25 @@ type Options struct {
 }
 
 func main() {
-	var options Options
-	if _, err := flags.Parse(&options); err != nil {
+	var opt options
+	if _, err := flags.Parse(&opt); err != nil {
 		os.Exit(1)
 	}
 
-	addr := fmt.Sprintf(":%d", options.Port)
+	addr := fmt.Sprintf(":%d", opt.Port)
 	tcpAddr, err := net.ResolveTCPAddr("tcp", addr)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	var store idgo.AllocatedIDStore
-	if options.Redis == "" {
-		store, err = idgo.NewLocalStore(options.MaxSize)
+	if opt.Redis == "" {
+		store, err = idgo.NewLocalStore(opt.MaxSize)
 		if err != nil {
 			log.Fatal(err)
 		}
 	} else {
-		store, err = idgo.NewRedisStore(options.Redis, options.Key, options.MaxSize)
+		store, err = idgo.NewRedisStore(opt.Redis, opt.Key, opt.MaxSize)
 		if err != nil {
 			log.Fatal(err)
 		}
