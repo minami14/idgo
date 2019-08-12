@@ -8,7 +8,6 @@ import (
 	"time"
 )
 
-
 // IDGenerateClient requests new id to server.
 type IDGenerateClient struct {
 	mutex *sync.Mutex
