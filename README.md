@@ -1,5 +1,6 @@
 # idgo
 [![CircleCI](https://circleci.com/gh/minami14/idgo.svg?style=shield)](https://circleci.com/gh/minami14/idgo)
+[![Travis](https://travis-ci.org/minami14/idgo.svg?branch=master)](https://travis-ci.org/minami14/idgo)
 
 idgo is a very fast id generator that generates an int id that can specify the maximum value
 
