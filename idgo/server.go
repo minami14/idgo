@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"sync"
+	"time"
 )
 
 // IDGenerateServer generate id when requested by client.
@@ -105,6 +106,8 @@ const (
 	disconnect
 )
 
+const timeout = 10 * time.Second
+
 func (s *IDGenerateServer) serve(conn *net.TCPConn) error {
 	buf := make([]byte, 1)
 	defer func() {
@@ -113,6 +116,9 @@ func (s *IDGenerateServer) serve(conn *net.TCPConn) error {
 		}
 	}()
 	for {
+		if err := conn.SetDeadline(time.Now().Add(timeout)); err != nil {
+			return err
+		}
 		if _, err := conn.Read(buf); err != nil {
 			return err
 		}

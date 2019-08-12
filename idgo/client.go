@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net"
 	"sync"
+	"time"
 )
 
 type IDGenerateClient struct {
@@ -29,6 +30,17 @@ func (c *IDGenerateClient) Connect(addr *net.TCPAddr) error {
 	if err != nil {
 		return err
 	}
+
+	go func() {
+		for {
+			time.Sleep(timeout / 2)
+			if err := c.Ping(); err != nil {
+				_ = c.Close()
+				return
+			}
+		}
+	}()
+
 	c.conn = conn
 	return nil
 }
@@ -56,6 +68,9 @@ func (c *IDGenerateClient) Ping() error {
 
 	buf := make([]byte, 1)
 	if _, err := c.conn.Read(buf); err != nil {
+		return err
+	}
+	if err := c.conn.SetDeadline(time.Now().Add(timeout)); err != nil {
 		return err
 	}
 
