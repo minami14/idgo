@@ -18,7 +18,11 @@ func RunServer(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	store := NewLocalStore(math.MaxInt16)
+	store, err := NewLocalStore(math.MaxInt16)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	s, err := NewServer(store, tcpAddr)
 	if err != nil {
 		t.Fatal(err)
@@ -85,7 +89,11 @@ func BenchmarkLocalStore(b *testing.B) {
 	b.ResetTimer()
 	b.ReportAllocs()
 
-	store := NewLocalStore(math.MaxInt16)
+	store, err := NewLocalStore(math.MaxInt16)
+	if err != nil {
+		b.Fatal(err)
+	}
+
 	gen, err := NewIDGenerator(store)
 	if err != nil {
 		b.Fatal(err)

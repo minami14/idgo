@@ -31,7 +31,10 @@ func main() {
 
 	var store idgo.AllocatedIDStore
 	if options.Redis == "" {
-		store = idgo.NewLocalStore(options.MaxSize)
+		store, err = idgo.NewLocalStore(options.MaxSize)
+		if err != nil {
+			log.Fatal(err)
+		}
 	} else {
 		store, err = idgo.NewRedisStore(options.Redis, options.Key, options.MaxSize)
 		if err != nil {
