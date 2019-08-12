@@ -1,6 +1,8 @@
 package idgo
 
-import "github.com/minami14/go-bitarray"
+import (
+	"github.com/minami14/go-bitarray"
+)
 
 // AllocatedIDStore stores allocated id.
 type AllocatedIDStore interface {
@@ -9,12 +11,14 @@ type AllocatedIDStore interface {
 	free(int) error
 	freeAll() error
 	getMaxSize() int
+	getAllocatedIDCount() int
 }
 
 // LocalStore stores allocated id to byte slice.
 type LocalStore struct {
-	maxSize     int
-	allocatedID *bitarray.BitArray
+	maxSize          int
+	allocatedID      *bitarray.BitArray
+	allocatedIDCount int
 }
 
 // NewLocalStore is LocalStore constructed.
@@ -35,18 +39,35 @@ func (l *LocalStore) isAllocated(id int) (bool, error) {
 }
 
 func (l *LocalStore) allocate(id int) error {
-	return l.allocatedID.Set(id)
+	err := l.allocatedID.Set(id)
+	if err != nil {
+		return err
+	}
+
+	l.allocatedIDCount++
+	return nil
 }
 
 func (l *LocalStore) free(id int) error {
-	return l.allocatedID.Clear(id)
+	err := l.allocatedID.Clear(id)
+	if err != nil {
+		return err
+	}
+
+	l.allocatedIDCount--
+	return nil
 }
 
 func (l *LocalStore) freeAll() error {
 	l.allocatedID.Reset()
+	l.allocatedIDCount = 0
 	return nil
 }
 
 func (l *LocalStore) getMaxSize() int {
 	return l.maxSize
+}
+
+func (l *LocalStore) getAllocatedIDCount() int {
+	return l.allocatedIDCount
 }
