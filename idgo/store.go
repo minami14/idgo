@@ -1,5 +1,7 @@
 package idgo
 
+import "github.com/minami14/go-bitarray"
+
 // AllocatedIDStore stores allocated id.
 type AllocatedIDStore interface {
 	isAllocated(int) (bool, error)
@@ -12,49 +14,36 @@ type AllocatedIDStore interface {
 // LocalStore stores allocated id to byte slice.
 type LocalStore struct {
 	maxSize     int
-	allocatedID []byte
+	allocatedID *bitarray.BitArray
 }
 
-const bits = 8
-
 // NewLocalStore is LocalStore constructed.
-func NewLocalStore(maxSize int) *LocalStore {
+func NewLocalStore(maxSize int) (*LocalStore, error) {
+	allocatedID, err := bitarray.NewBitArray(maxSize)
+	if err != nil {
+		return nil, err
+	}
+
 	return &LocalStore{
 		maxSize:     maxSize,
-		allocatedID: make([]byte, maxSize/bits+1)}
+		allocatedID: allocatedID,
+	}, nil
 }
 
 func (l *LocalStore) isAllocated(id int) (bool, error) {
-	index := id / bits
-	b := l.allocatedID[index]
-	shift := byte(id % bits)
-	mask := byte(1 << shift)
-	flag := b & mask
-	return flag != 0, nil
+	return l.allocatedID.Get(id)
 }
 
 func (l *LocalStore) allocate(id int) error {
-	index := id / bits
-	b := l.allocatedID[index]
-	shift := byte(id % bits)
-	mask := byte(1 << shift)
-	flag := b | mask
-	l.allocatedID[index] = flag
-	return nil
+	return l.allocatedID.Set(id)
 }
 
 func (l *LocalStore) free(id int) error {
-	index := id / bits
-	b := l.allocatedID[index]
-	shift := byte(id % bits)
-	mask := byte(1 << shift)
-	flag := b & ^mask
-	l.allocatedID[index] = flag
-	return nil
+	return l.allocatedID.Clear(id)
 }
 
 func (l *LocalStore) freeAll() error {
-	l.allocatedID = make([]byte, l.maxSize/bits+1)
+	l.allocatedID.Reset()
 	return nil
 }
 
