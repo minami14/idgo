@@ -1,14 +1,15 @@
 package idgo
 
-import "github.com/gomodule/redigo/redis"
+import (
+	"github.com/gomodule/redigo/redis"
+)
 
 // RedisStore stores allocated id to redis.
 type RedisStore struct {
-	maxSize          int
-	conn             redis.Conn
-	keyBitArray      string
-	keyMax           string
-	allocatedIDCount int
+	maxSize     int
+	conn        redis.Conn
+	keyBitArray string
+	keyMax      string
 }
 
 // NewRedisStore is RedisStore constructed.
@@ -80,7 +81,7 @@ func (r *RedisStore) freeAll() error {
 		return err
 	}
 
-	if err := r.conn.Send("del", r.keyMax); err != nil {
+	if err := r.conn.Send("set", r.keyMax, "0"); err != nil {
 		return err
 	}
 
@@ -95,6 +96,23 @@ func (r *RedisStore) getMaxSize() int {
 	return r.maxSize
 }
 
-func (r *RedisStore) getAllocatedIDCount() int {
-	return r.allocatedIDCount
+func (r *RedisStore) getAllocatedIDCount() (int, error) {
+	if _, err := r.conn.Do("watch", r.keyMax); err != nil {
+		return 0, err
+	}
+
+	count, err := redis.Int(r.conn.Do("get", r.keyMax))
+	if err != nil {
+		r.conn.Do("set", r.keyMax, 0)
+		r.conn.Do("unwatch", r.keyMax)
+
+		count, err := redis.Int(r.conn.Do("get", r.keyMax))
+		if err != nil {
+			return 0, err
+		}
+		return count, nil
+	}
+
+	r.conn.Do("unwatch", r.keyMax)
+	return count, nil
 }
