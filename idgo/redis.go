@@ -23,7 +23,7 @@ func NewRedisStore(host, key string, maxSize int) (*RedisStore, error) {
 		maxSize:     maxSize,
 		conn:        conn,
 		keyBitArray: key,
-		keyMax:      key + "_max",
+		keyMax:      key + "-max",
 	}, nil
 }
 
@@ -103,8 +103,8 @@ func (r *RedisStore) getAllocatedIDCount() (int, error) {
 
 	count, err := redis.Int(r.conn.Do("get", r.keyMax))
 	if err != nil {
-		r.conn.Do("set", r.keyMax, 0)
-		r.conn.Do("unwatch", r.keyMax)
+		_, _ = r.conn.Do("set", r.keyMax, 0)
+		_, _ = r.conn.Do("unwatch", r.keyMax)
 
 		count, err := redis.Int(r.conn.Do("get", r.keyMax))
 		if err != nil {
@@ -113,6 +113,6 @@ func (r *RedisStore) getAllocatedIDCount() (int, error) {
 		return count, nil
 	}
 
-	r.conn.Do("unwatch", r.keyMax)
+	_, _ = r.conn.Do("unwatch", r.keyMax)
 	return count, nil
 }
