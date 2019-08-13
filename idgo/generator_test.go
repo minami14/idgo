@@ -58,7 +58,7 @@ func GenerateTest(t *testing.T, store AllocatedIDStore, address string) {
 			t.Error(err)
 		}
 		if !(id == i) {
-			t.Errorf("invalid id %b", id)
+			t.Errorf("invalid id %v", id)
 			return
 		}
 		if err := client.Free(id); err != nil {
@@ -76,7 +76,7 @@ func GenerateTest(t *testing.T, store AllocatedIDStore, address string) {
 				}
 				m.Lock()
 				if used[id] {
-					t.Errorf("used id %b", id)
+					t.Errorf("used id %v", id)
 				}
 				used[id] = true
 				m.Unlock()
@@ -98,6 +98,10 @@ func TestLocalStore(t *testing.T) {
 func TestRedisStore(t *testing.T) {
 	store, err := NewRedisStore("127.0.0.1:6379", "idgo-test", maxSize)
 	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := store.freeAll(); err != nil {
 		t.Fatal(err)
 	}
 
@@ -142,6 +146,11 @@ func BenchmarkRedisStore(b *testing.B) {
 	if err != nil {
 		b.Fatal(err)
 	}
+
+	if err := store.freeAll(); err != nil {
+		b.Fatal(err)
+	}
+
 	gen, err := NewIDGenerator(store)
 	if err != nil {
 		b.Fatal(err)
