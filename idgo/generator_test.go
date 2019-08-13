@@ -10,15 +10,13 @@ import (
 	"time"
 )
 
-const address = ":4000"
+const (
+	localStoreAddress = ":4000"
+	redisStoreAddress = ":4001"
+)
 
-func RunServer(t *testing.T) {
+func RunServer(t *testing.T, store AllocatedIDStore, address string) {
 	tcpAddr, err := net.ResolveTCPAddr("tcp", address)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	store, err := NewLocalStore(math.MaxInt16)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -32,14 +30,16 @@ func RunServer(t *testing.T) {
 
 	go func() {
 		if err := s.Run(); err != nil {
-			t.Fatal(err)
+			log.Fatal(err)
 		}
 	}()
 	time.Sleep(1 * time.Second)
 }
 
-func TestGenerateIDByServer(t *testing.T) {
-	RunServer(t)
+const maxSize = math.MaxInt8
+
+func GenerateTest(t *testing.T, store AllocatedIDStore, address string) {
+	RunServer(t, store, address)
 
 	tcpAddr, err := net.ResolveTCPAddr("tcp", address)
 	if err != nil {
@@ -50,9 +50,9 @@ func TestGenerateIDByServer(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	used := make([]bool, math.MaxInt16)
+	used := make([]bool, maxSize)
 	m := &sync.Mutex{}
-	for i := 0; i < math.MaxInt16; i++ {
+	for i := 0; i < maxSize; i++ {
 		id, err := client.Generate()
 		if err != nil {
 			t.Error(err)
@@ -66,9 +66,10 @@ func TestGenerateIDByServer(t *testing.T) {
 		}
 	}
 
-	for i := 0; i < 100; i++ {
+	maxSizeSqrt := int(math.Sqrt(float64(maxSize)))
+	for i := 0; i < maxSizeSqrt; i++ {
 		go func() {
-			for j := 0; j < 100; j++ {
+			for j := 0; j < maxSizeSqrt; j++ {
 				id, err := client.Generate()
 				if err != nil {
 					t.Error(err)
@@ -85,11 +86,29 @@ func TestGenerateIDByServer(t *testing.T) {
 	}
 }
 
+func TestLocalStore(t *testing.T) {
+	store, err := NewLocalStore(maxSize)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	GenerateTest(t, store, localStoreAddress)
+}
+
+func TestRedisStore(t *testing.T) {
+	store, err := NewRedisStore("127.0.0.1:6379", "idgo-test", maxSize)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	GenerateTest(t, store, redisStoreAddress)
+}
+
 func BenchmarkLocalStore(b *testing.B) {
 	b.ResetTimer()
 	b.ReportAllocs()
 
-	store, err := NewLocalStore(math.MaxInt16)
+	store, err := NewLocalStore(maxSize)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -100,7 +119,7 @@ func BenchmarkLocalStore(b *testing.B) {
 	}
 
 	for i := 0; i < b.N; i++ {
-		for j := 0; j < math.MaxInt16; j++ {
+		for j := 0; j < maxSize; j++ {
 			id, err := gen.Generate()
 			if err != nil {
 				b.Error(err)
@@ -119,7 +138,7 @@ func BenchmarkRedisStore(b *testing.B) {
 	b.ResetTimer()
 	b.ReportAllocs()
 
-	store, err := NewRedisStore("127.0.0.1:6379", "idgo", math.MaxInt16)
+	store, err := NewRedisStore("127.0.0.1:6379", "idgo-bench", maxSize)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -129,7 +148,7 @@ func BenchmarkRedisStore(b *testing.B) {
 	}
 
 	for i := 0; i < b.N; i++ {
-		for j := 0; j < math.MaxInt16; j++ {
+		for j := 0; j < maxSize; j++ {
 			id, err := gen.Generate()
 			if err != nil {
 				b.Error(err)
