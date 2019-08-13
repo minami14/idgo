@@ -6,6 +6,9 @@ env:
 go:
   - 1.12.7
 
+services:
+  - redis-server
+
 install:
   - go get golang.org/x/tools/cmd/goimports
   - go get -u golang.org/x/lint/golint
