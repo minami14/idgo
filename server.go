@@ -184,7 +184,7 @@ func (s *IDGenerateServer) generate(conn *net.TCPConn) error {
 
 func (s *IDGenerateServer) allocate(conn *net.TCPConn) error {
 	buf := make([]byte, 8)
-	n, err := conn.Read(buf);
+	n, err := conn.Read(buf)
 	if err != nil {
 		return err
 	}
@@ -199,7 +199,7 @@ func (s *IDGenerateServer) allocate(conn *net.TCPConn) error {
 
 func (s *IDGenerateServer) free(conn *net.TCPConn) error {
 	buf := make([]byte, 8)
-	n, err := conn.Read(buf);
+	n, err := conn.Read(buf)
 	if err != nil {
 		return err
 	}
