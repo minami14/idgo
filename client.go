@@ -147,7 +147,7 @@ func (c *IDGenerateClient) FreeAll() error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
-	buf := make([]byte, 1, 8)
+	buf := make([]byte, 1)
 	buf[0] = freeAll
 	if _, err := c.conn.Write(buf); err != nil {
 		return err
