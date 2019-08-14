@@ -218,7 +218,7 @@ func (s *IDGenerateServer) freeAll(conn *net.TCPConn) error {
 
 func (s *IDGenerateServer) isAllocated(conn *net.TCPConn) error {
 	buf := make([]byte, 8)
-	n, err := conn.Read(buf);
+	n, err := conn.Read(buf)
 	if err != nil {
 		return err
 	}
