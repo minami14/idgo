@@ -1,0 +1,8 @@
+github.com/gomodule/redigo v2.0.0+incompatible h1:K/R+8tc58AaqLkqG2Ol3Qk+DR/TlNuhuh457pBFPtt0=
+github.com/gomodule/redigo v2.0.0+incompatible/go.mod h1:B4C85qUVwatsJoIUNIfCRsp7qO0iAmpGFZ4EELWSbC4=
+github.com/jessevdk/go-flags v1.4.0 h1:4IU2WS7AumrZ/40jfhf4QVDMsQwqA7VEHozFRrGARJA=
+github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
+github.com/minami14/go-bitarray v0.0.0-20190811043822-7acdd96c7965 h1:ppk8EnvG07cGPOp+56eDJhR3F4C1eblB1PSOGr+rqSw=
+github.com/minami14/go-bitarray v0.0.0-20190811043822-7acdd96c7965/go.mod h1:acA3F6YzUx/WBUPpoR1HS5H1HAlINmfn1nE9aSilp2g=
+github.com/minami14/idgo v0.0.0-20190813025130-5cbf3c3f9eb4 h1:o3OBOxvM5YU7gLkPlZ2riozOLM3P2YBmRytj+SaOvhU=
+github.com/minami14/idgo v0.0.0-20190813025130-5cbf3c3f9eb4/go.mod h1:P7L/lNrRz9OJJ7d07xkOmgTk6qJpFoyRtotUby0hrps=
