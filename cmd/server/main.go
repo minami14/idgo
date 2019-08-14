@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/jessevdk/go-flags"
-	"github.com/minami14/idgo/idgo"
+	"github.com/minami14/idgo"
 )
 
 type options struct {
