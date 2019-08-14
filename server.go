@@ -3,6 +3,7 @@ package idgo
 import (
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"log"
 	"net"
 	"sync"
@@ -183,19 +184,30 @@ func (s *IDGenerateServer) generate(conn *net.TCPConn) error {
 
 func (s *IDGenerateServer) allocate(conn *net.TCPConn) error {
 	buf := make([]byte, 8)
-	if _, err := conn.Read(buf); err != nil {
+	n, err := conn.Read(buf);
+	if err != nil {
 		return err
 	}
+
+	if n != 8 {
+		return fmt.Errorf("allocate: invalid data length %v", buf)
+	}
+
 	id := int(binary.LittleEndian.Uint64(buf))
-	err := s.generator.Allocate(id)
-	return err
+	return s.generator.Allocate(id)
 }
 
 func (s *IDGenerateServer) free(conn *net.TCPConn) error {
 	buf := make([]byte, 8)
-	if _, err := conn.Read(buf); err != nil {
+	n, err := conn.Read(buf);
+	if err != nil {
 		return err
 	}
+
+	if n != 8 {
+		return fmt.Errorf("free: invalid data length %v", buf)
+	}
+
 	id := int(binary.LittleEndian.Uint64(buf))
 	return s.generator.Free(id)
 }
@@ -206,8 +218,13 @@ func (s *IDGenerateServer) freeAll(conn *net.TCPConn) error {
 
 func (s *IDGenerateServer) isAllocated(conn *net.TCPConn) error {
 	buf := make([]byte, 8)
-	if _, err := conn.Read(buf); err != nil {
+	n, err := conn.Read(buf);
+	if err != nil {
 		return err
+	}
+
+	if n != 8 {
+		return fmt.Errorf("isAllocated: invalid data length %v", buf)
 	}
 
 	id := int(binary.LittleEndian.Uint64(buf))
