@@ -9,7 +9,7 @@ type RedisStore struct {
 	maxSize     int
 	conn        redis.Conn
 	keyBitArray string
-	keyMax      string
+	keyCount    string
 }
 
 // NewRedisStore is RedisStore constructed.
@@ -19,12 +19,41 @@ func NewRedisStore(host, key string, maxSize int) (*RedisStore, error) {
 		return nil, err
 	}
 
-	return &RedisStore{
+	store := &RedisStore{
 		maxSize:     maxSize,
 		conn:        conn,
 		keyBitArray: key,
-		keyMax:      key + "-max",
-	}, nil
+		keyCount:    key + "-count",
+	}
+
+	if err := store.initializeAllocatedIDCount(); err != nil {
+		return nil, err
+	}
+
+	return store, nil
+}
+
+func (r *RedisStore) initializeAllocatedIDCount() error {
+	if _, err := r.conn.Do("watch", r.keyCount); err != nil {
+		return err
+	}
+
+	_, err := redis.Int(r.conn.Do("get", r.keyCount))
+	if err != nil {
+		if _, err := r.conn.Do("set", r.keyCount, 0); err != nil {
+			if _, err = r.conn.Do("unwatch"); err != nil {
+				return err
+			}
+			return err
+		}
+
+	}
+
+	if _, err = r.conn.Do("unwatch"); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *RedisStore) isAllocated(id int) (bool, error) {
@@ -41,7 +70,7 @@ func (r *RedisStore) allocate(id int) error {
 		return err
 	}
 
-	if err := r.conn.Send("incr", r.keyMax); err != nil {
+	if err := r.conn.Send("incr", r.keyCount); err != nil {
 		return err
 	}
 
@@ -61,7 +90,7 @@ func (r *RedisStore) free(id int) error {
 		return err
 	}
 
-	if err := r.conn.Send("decr", r.keyMax); err != nil {
+	if err := r.conn.Send("decr", r.keyCount); err != nil {
 		return err
 	}
 
@@ -81,7 +110,7 @@ func (r *RedisStore) freeAll() error {
 		return err
 	}
 
-	if err := r.conn.Send("set", r.keyMax, "0"); err != nil {
+	if err := r.conn.Send("set", r.keyCount, "0"); err != nil {
 		return err
 	}
 
@@ -97,22 +126,10 @@ func (r *RedisStore) getMaxSize() int {
 }
 
 func (r *RedisStore) getAllocatedIDCount() (int, error) {
-	if _, err := r.conn.Do("watch", r.keyMax); err != nil {
+	count, err := redis.Int(r.conn.Do("get", r.keyCount))
+	if err != nil {
 		return 0, err
 	}
 
-	count, err := redis.Int(r.conn.Do("get", r.keyMax))
-	if err != nil {
-		_, _ = r.conn.Do("set", r.keyMax, 0)
-		_, _ = r.conn.Do("unwatch", r.keyMax)
-
-		count, err := redis.Int(r.conn.Do("get", r.keyMax))
-		if err != nil {
-			return 0, err
-		}
-		return count, nil
-	}
-
-	_, _ = r.conn.Do("unwatch", r.keyMax)
 	return count, nil
 }
