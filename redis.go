@@ -41,16 +41,19 @@ func (r *RedisStore) initializeAllocatedIDCount() error {
 	_, err := redis.Int(r.conn.Do("get", r.keyCount))
 	if err != nil {
 		if _, err := r.conn.Do("set", r.keyCount, 0); err != nil {
+			if _, err = r.conn.Do("unwatch"); err != nil {
+				return err
+			}
 			return err
 		}
-		if _, err = r.conn.Do("unwatch", r.keyCount); err != nil {
-			return err
-		}
+
 	}
 
-	if _, err = r.conn.Do("unwatch", r.keyCount); err != nil {
+	if _, err = r.conn.Do("unwatch"); err != nil {
 		return err
 	}
+
+	return nil
 }
 
 func (r *RedisStore) isAllocated(id int) (bool, error) {
