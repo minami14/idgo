@@ -7,7 +7,7 @@ import (
 
 // IDGenerator generate a id.
 type IDGenerator struct {
-	mutex *sync.Mutex
+	mutex *sync.RWMutex
 
 	allocatedIDStore AllocatedIDStore
 
@@ -25,7 +25,7 @@ func NewIDGenerator(store AllocatedIDStore) (*IDGenerator, error) {
 	}
 
 	return &IDGenerator{
-		mutex:            &sync.Mutex{},
+		mutex:            new(sync.RWMutex),
 		allocatedIDStore: store,
 		maxSize:          store.getMaxSize(),
 	}, nil
@@ -135,8 +135,8 @@ func (g *IDGenerator) IsAllocated(id int) (bool, error) {
 		return false, errors.New("greater than max size")
 	}
 
-	g.mutex.Lock()
-	defer g.mutex.Unlock()
+	g.mutex.RLock()
+	defer g.mutex.RUnlock()
 
 	return g.allocatedIDStore.isAllocated(id)
 }
